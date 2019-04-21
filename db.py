@@ -40,7 +40,7 @@ class Class(db.Model):
         }
 
 class Assignment(db.Model):
-	__table__ = 'assignments'
+	__tablename__ = 'assignments'
 	id = db.Column(db.Integer, primary_key = True)
 	name = db.Column(db.String, nullable = False)
 	class_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable = False)
@@ -58,7 +58,7 @@ class Assignment(db.Model):
 		}
 
 class Message(db.Model):
-	__table__ = 'messages'
+	__tablename__ = 'messages'
 	id = db.Column(db.Integer, primary_key = True)
 	message = db.Column(db.String, nullable = False)
 	user = db.Column(db.String, nullable = False)
