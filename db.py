@@ -34,9 +34,11 @@ class Class(db.Model):
 
     def serialize(self):
         return {
+			'id': self.id,
             'subject': self.subject,
             'number': self.number,
-            'name': self.name
+            'name': self.name,
+			'assignments': [assignment.serialize() for assignment in self.assignments]
         }
 
 class Assignment(db.Model):
@@ -52,6 +54,7 @@ class Assignment(db.Model):
 
 	def serialize(self):
 		return {
+			'id': self.id,
 			'name': self.name,
 			'class_id': self.class_id,
 			'messages': [message.serialize() for message in self.messages]
@@ -69,6 +72,7 @@ class Message(db.Model):
 		self.message = kwargs.get('message', '')
 		self.user = kwargs.get('user', '')
 		self.time = kwargs.get('time', '')
+		self.assignment_id = kwargs.get('assignment_id', 0)
 
 	def serialize(self):
 		return {
