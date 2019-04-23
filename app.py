@@ -13,30 +13,29 @@ app.config['SQLALCHEMY_ECHO'] = True
 db.init_app(app)
 with app.app_context():
 	db.create_all()
-
-# @app.before_first_request
-# def initialize():
-# 	subj_url = 'https://classes.cornell.edu/api/2.0/config/subjects.json?roster=SP19'
-# 	subjects = requests.get(subj_url).json().get('data', '').get('subjects', '')
-# 	subject_list = []
-# 	for subject in subjects:
-# 		subject_list.append(subject.get('value', ''))
-# 	classes = []
-# 	class_url = 'https://classes.cornell.edu/api/2.0/search/classes.json?roster=SP19&subject='
-# 	for subject in subject_list:
-# 		classes = requests.get(class_url + str(subject)).json().get('data', '').get('classes', '')
-# 		for single_class in classes:
-# 			new_class = Class(
-# 				subject = single_class.get('subject', ''),
-# 				number = single_class.get('catalogNbr', ''), 
-# 				name = single_class.get('titleLong', '')
-# 				)
-# 			db.session.add(new_class)
-# 	db.session.commit()
+@app.before_first_request
 
 @app.route('/api/classes/')
 def get_classes():
 	classes = Class.query.all()
+	if not classes:
+		subj_url = 'https://classes.cornell.edu/api/2.0/config/subjects.json?roster=SP19'
+		subjects = requests.get(subj_url).json().get('data', '').get('subjects', '')
+		subject_list = []
+		for subject in subjects:
+			subject_list.append(subject.get('value', ''))
+		classes = []
+		class_url = 'https://classes.cornell.edu/api/2.0/search/classes.json?roster=SP19&subject='
+		for subject in subject_list:
+			classes = requests.get(class_url + str(subject)).json().get('data', '').get('classes', '')
+			for single_class in classes:
+				new_class = Class(
+					subject = single_class.get('subject', ''),
+					number = single_class.get('catalogNbr', ''), 
+					name = single_class.get('titleLong', '')
+					)
+				db.session.add(new_class)
+		db.session.commit()
 	res = {'success': True, 'data': [single_class.serialize() for single_class in classes]} 
 	return json.dumps(res), 200
 
@@ -104,6 +103,14 @@ def add_assignment(class_id):
        return json.dumps({'success': True, 'data': assignment.serialize()}), 200
    return json.dumps({'success': False, 'error': 'Class not found'}), 404
 
+@app.route('/api/class/<int:class_id>/assignments/')
+def get_assignments_of_class(class_id):
+	single_class = Class.query.filter_by(id = class_id).first()
+	if single_class is not None:
+		assignments = [assignment.serialize() for assignment in single_class.assignments]
+		return json.dumps({'success': True, 'data': assignments}), 200
+	return json.dumps({'success': False, 'error': 'Class not found'}), 404
+
 @app.route('/api/class/<int:class_id>/assignment/<int:assign_id>/', methods=['POST'])
 def add_message_to_assignment(class_id, assign_id):
 	post_body = json.loads(request.data)
@@ -124,4 +131,4 @@ def add_message_to_assignment(class_id, assign_id):
 	return json.dumps({'success': True, 'data': message.serialize()}), 200
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=5000, debug=True)
+	app.run(host='0.0.0.0', port=8000, debug=True)
