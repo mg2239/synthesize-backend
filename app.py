@@ -99,6 +99,7 @@ def add_assignment(class_id):
 		   class_id = class_id
 	   )
        single_class.assignments.append(assignment)
+       db.session.add(assignment)
        db.session.commit()
        return json.dumps({'success': True, 'data': assignment.serialize()}), 200
    return json.dumps({'success': False, 'error': 'Class not found'}), 404
@@ -127,8 +128,19 @@ def add_message_to_assignment(class_id, assign_id):
 		assignment_id = assign_id
 	)
 	assignment.messages.append(message)
+	db.session.add(message)
 	db.session.commit()
 	return json.dumps({'success': True, 'data': message.serialize()}), 200
 
+@app.route('/api/class/<int:class_id>/assignment/<int:assign_id>/')
+def get_messages(class_id, assign_id):
+	single_class = Class.query.filter_by(id = class_id).first()
+	if single_class is not None:
+		assignment = Assignment.query.filter_by(id = assign_id).first()
+		if assignment is not None:
+			return json.dumps({'success': True, 'data': [message.serialize() for message in assignment.messages]}), 200
+		return json.dumps({'success': False, 'error': 'Assignment not found'})
+	return json.dumps({'success': False, 'error': 'Class not found'})
+
 if __name__ == '__main__':
-	app.run(host='0.0.0.0', port=8000, debug=True)
+	app.run(host='0.0.0.0', port=5000, debug=True)
