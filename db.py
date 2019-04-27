@@ -51,6 +51,7 @@ class Assignment(db.Model):
 	def __init__(self, **kwargs):
 		self.name = kwargs.get('name', '')
 		self.class_id = kwargs.get('class_id', 0)
+		self.messages = []
 
 	def serialize(self):
 		return {
