@@ -13,7 +13,6 @@ app.config['SQLALCHEMY_ECHO'] = True
 db.init_app(app)
 with app.app_context():
 	db.create_all()
-@app.before_first_request
 
 @app.route('/api/classes/')
 def get_classes():
@@ -36,8 +35,9 @@ def get_classes():
 					)
 				db.session.add(new_class)
 		db.session.commit()
-	res = {'success': True, 'data': [single_class.serialize() for single_class in classes]} 
-	return json.dumps(res), 200
+		res = {'success': True, 'data': [single_class.serialize() for single_class in classes]} 
+		return json.dumps(res), 200
+	return json.dumps({'success': True, 'data': [single_class.serialize() for single_class in classes]})
 
 @app.route('/api/user/', methods=['POST'])
 def create_user():
@@ -117,16 +117,21 @@ def add_message_to_assignment(class_id, assign_id):
 	post_body = json.loads(request.data)
 	single_class = Class.query.filter_by(id = class_id).first()
 	assignment = Assignment.query.filter_by(id = assign_id).first()
+	user = User.query.filter_by(username = post_body.get('username')).first()
 	if single_class is None:
 		return json.dumps({'success': False, 'error': 'Class not found'}), 404
 	elif assignment is None:
 		return json.dumps({'success': False, 'error': 'Assignment not found'}), 404
 	message = Message(
 		message = post_body.get('message', ''),
-		user = post_body.get('user', 'anonymous'),
+		username = post_body.get('username', 'anonymous'),
+		name = post_body.get('name', 'anonymous'),
 		time = post_body.get('time', '2000-01-01T00:00:00'),
 		assignment_id = assign_id
 	)
+	if user is not None:
+		user.classes.append(single_class)
+		user.assignments.append(assignment)
 	assignment.messages.append(message)
 	db.session.add(message)
 	db.session.commit()
