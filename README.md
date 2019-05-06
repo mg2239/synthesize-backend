@@ -5,7 +5,7 @@ Synthesize is an app designed to provide Cornell students an easy way to collabo
 
 Link to frontend repo: https://github.com/eli-zhang/synthesize
 
-Screenshots\description located in frontend repository.
+Screenshots located in frontend repository.
 
 ## Requirements
 The backend is written using Flask, a Python framework, and SQLAlchemy, a Python database toolkit. The API spec can be found [here](https://paper.dropbox.com/doc/Synthesize-API-Spec-FCyFQlO0rDT2SzkGlWoh2). We used the API provided by Class Roster to get all classes at Cornell.
